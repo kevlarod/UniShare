@@ -1,0 +1,1 @@
+{"_id":{"$oid":"6a03d2a83aa69a5bf341cc31"},"usuario_id":{"$oid":"6a03cd933aa69a5bf341cc2b"},"apunte_id":{"$oid":"6a03cff53aa69a5bf341cc2e"},"tipo":"ingreso_ad","valores":{"monto_fiat_generado":{"$numberDecimal":"0.10"},"creditos_asignados":{"$numberDecimal":"7.00"},"comision_plataforma":{"$numberDecimal":"0.03"}},"fecha":{"$date":"2026-05-13T01:23:52.064Z"}}
