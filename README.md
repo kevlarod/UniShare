@@ -1,6 +1,7 @@
 # UniShare - Plataforma de Conocimiento Colaborativo
 
 Repositorio académico colaborativo para estudiantes universitarios.
+
 Proyecto Integrador — Base de Datos II — UNDEC 2026.
 
 ## Integrantes
@@ -25,16 +26,20 @@ Osores Milagros
 ## Levantar el entorno
 
 1. Clonar el repositorio:
+   
    git clone https://github.com/kevlarod/UniShare.git
    cd UniShare
 
 2. Crear el archivo de variables de entorno:
+   
    cp .env.example .env
 
 3. Levantar los contenedores:
+   
    docker compose up -d
 
 4. Verificar que estén corriendo:
+   
    docker compose ps
 
 ## Base de Datos MongoDB
