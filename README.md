@@ -5,9 +5,13 @@ Proyecto Integrador — Base de Datos II — UNDEC 2026.
 
 ## Integrantes
 Paez Kevin
+
 Brizuela Lara
+
 Gonzalez Lucas
+
 Osores Milagros
+
 
 ## Stack Tecnológico
 - **Base de datos**: MongoDB 4.4
