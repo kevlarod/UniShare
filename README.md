@@ -1,13 +1,13 @@
 # Universidad Nacional de Chilecito
 
 ## Equipo de Trabajo
-Kevin Paez kevin@alumno.undec.edu.ar
+Kevin Paez kevoundec@gmail.com
 
-Lara Brizuela lara@alumno.undec.edu.ar
+Lara Brizuela 
 
-Lucas Gonzalez lucas@alumno.undec.edu.ar
+Lucas Gonzalez lucas.g44741491@gmail.com
 
-Milagros Osores milagros@alumno.undec.edu.ar
+Milagros Osores 
 
 # UniShare
 Plataforma de Conocimiento Colaborativo — Base de Datos II 2026
@@ -17,7 +17,7 @@ Plataforma de Conocimiento Colaborativo — Base de Datos II 2026
 * Python 3.12
 * pip install --upgrade pip
 
-#### Levantar los contenedores (MongoDB + MinIO)
+#### Levantar los contenedores
 * cp .env.example .env
 * docker compose up -d
 
