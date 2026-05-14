@@ -1,13 +1,18 @@
 # UniShare - Plataforma de Conocimiento Colaborativo
 
 Repositorio académico colaborativo para estudiantes universitarios.
+
 Proyecto Integrador — Base de Datos II — UNDEC 2026.
 
 ## Integrantes
-- Paez Kevin
-- Brizuela Lara
-- Gonzalez Lucas
-- Osores Milagros
+Paez Kevin
+
+Brizuela Lara
+
+Gonzalez Lucas
+
+Osores Milagros
+
 
 ## Stack Tecnológico
 - **Base de datos**: MongoDB 4.4
@@ -21,16 +26,20 @@ Proyecto Integrador — Base de Datos II — UNDEC 2026.
 ## Levantar el entorno
 
 1. Clonar el repositorio:
+   
    git clone https://github.com/kevlarod/UniShare.git
    cd UniShare
 
 2. Crear el archivo de variables de entorno:
+   
    cp .env.example .env
 
 3. Levantar los contenedores:
+   
    docker compose up -d
 
 4. Verificar que estén corriendo:
+   
    docker compose ps
 
 ## Base de Datos MongoDB
