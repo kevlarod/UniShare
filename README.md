@@ -1,62 +1,56 @@
-# UniShare - Plataforma de Conocimiento Colaborativo
+# Universidad Nacional de Chilecito
 
-Repositorio académico colaborativo para estudiantes universitarios.
+## Equipo de Trabajo
+Kevin Paez kevin@alumno.undec.edu.ar
 
-Proyecto Integrador — Base de Datos II — UNDEC 2026.
+Lara Brizuela lara@alumno.undec.edu.ar
 
-## Integrantes
-Paez Kevin
+Lucas Gonzalez lucas@alumno.undec.edu.ar
 
-Brizuela Lara
+Milagros Osores milagros@alumno.undec.edu.ar
 
-Gonzalez Lucas
+# UniShare
+Plataforma de Conocimiento Colaborativo — Base de Datos II 2026
 
-Osores Milagros
+#### Antes de comenzar, necesitás:
+* Docker Desktop instalado y corriendo
+* Python 3.12
+* pip install --upgrade pip
 
+#### Levantar los contenedores (MongoDB + MinIO)
+* cp .env.example .env
+* docker compose up -d
 
-## Stack Tecnológico
-- **Base de datos**: MongoDB 4.4
-- **Object Storage**: MinIO
-- **Infraestructura**: Docker + Docker Compose
+#### Crear el entorno virtual
+* python3 -m venv venv
 
-## Requisitos Previos
-- Docker Desktop instalado y corriendo
-- Git configurado
+#### Activar el entorno virtual
+* Linux/Mac: source venv/bin/activate
+* Windows: venv\Scripts\activate
 
-## Levantar el entorno
+#### Instalar librerías
+* pip install pymongo minio
 
-1. Clonar el repositorio:
-   
-   git clone https://github.com/kevlarod/UniShare.git
-   cd UniShare
+#### Verificar que las bases de datos funcionan
+* python3 test_dao.py
 
-2. Crear el archivo de variables de entorno:
-   
-   cp .env.example .env
+#### Para acceder al panel de MinIO
+* http://localhost:9001
+* Usuario: minioadmin
+* Contraseña: changeme
 
-3. Levantar los contenedores:
-   
-   docker compose up -d
+#### Para conectarse al Mongo Shell
+* docker exec -it unishare_mongodb mongo -u admin -p changeme --authenticationDatabase admin
 
-4. Verificar que estén corriendo:
-   
-   docker compose ps
+#### Colecciones disponibles en MongoDB
+* universidades
+* alumnos
+* apuntes
+* reportes
+* transacciones
+* anuncios
 
-## Base de Datos MongoDB
-
-Las colecciones se encuentran en docker/mongo-seed/.
-
-### Colecciones
-- universidades
-- alumnos
-- apuntes
-- reportes
-- transacciones
-- anuncios
-
-## Estado del Proyecto
-- [x] Infraestructura Docker
-- [x] Base de datos MongoDB con colecciones e índices
-- [ ] Object Storage MinIO
-- [ ] Backend Python
-- [ ] Frontend
+#### Archivos del proyecto
+* config_vars.py — credenciales de conexión a MongoDB y MinIO
+* dao.py — funciones para interactuar con ambas bases de datos
+* test_dao.py — pruebas que demuestran que todo funciona junto
