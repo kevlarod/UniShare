@@ -48,6 +48,7 @@ Para usar la plataforma de forma interactiva (menú por consola e interfaz gráf
   * Usuario: minioadmin
   * Contraseña: changeme
 * **Mongo Shell:** docker exec -it unishare_mongodb mongo -u admin -p changeme --authenticationDatabase admin
+  * Una vez dentro de la consola, ejecutá `use unishare_db` para poder ver y consultar las colecciones del proyecto.*
 * **ChromaDB:** La base de datos vectorial persiste de forma local en el directorio `./chroma_db` (se crea automáticamente al inicializar).
 
 #### Colecciones disponibles en MongoDB
