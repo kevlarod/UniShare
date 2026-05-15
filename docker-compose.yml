@@ -12,6 +12,7 @@ services:
       MONGO_INITDB_DATABASE: ${MONGO_DB_NAME}
     volumes:
       - mongo_data:/data/db
+      - ./docker/mongo-seed:/docker-entrypoint-initdb.d/
     command: mongod --wiredTigerCacheSizeGB 0.25
     deploy:
       resources:

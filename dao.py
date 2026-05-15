@@ -217,3 +217,67 @@ def buscar_alumno_por_legajo(legajo):
     print(f"  Insignias: {r.get('insignias', [])}")
     print(f"{'=' * 40}")
     return alumno
+
+def obtener_escuelas():
+    return list(db.escuelas.find())
+
+def generar_nombre_usuario(nombre, apellido, dni, edad):
+    base = nombre[:2].lower() + apellido[:2].lower() + str(dni)[-2:] + str(edad)
+    if db.alumnos.find_one({ "perfil.nombre_usuario": base }):
+        base = base + "_2"
+    return base
+
+def generar_legajo():
+    import random
+    while True:
+        legajo = random.randint(10000, 99999)
+        if not db.alumnos.find_one({ "perfil.legajo": legajo }):
+            return legajo
+
+def registrar_alumno_completo(nombre, apellido, dni, fecha_nacimiento, edad, email, carrera, escuela_id, siglas_universidad="UNDEC"):
+    from datetime import datetime
+    import bson
+
+    universidad = db.universidades.find_one({ "institucion.siglas": siglas_universidad })
+    if not universidad:
+        return {"error": f"Universidad {siglas_universidad} no encontrada"}
+
+    nombre_usuario = generar_nombre_usuario(nombre, apellido, dni, edad)
+    legajo = generar_legajo()
+
+    alumno = {
+        "perfil": {
+            "nombre_usuario": nombre_usuario,
+            "nombre": nombre,
+            "apellido": apellido,
+            "legajo": legajo,
+            "dni": dni,
+            "fecha_nacimiento": datetime.strptime(fecha_nacimiento, "%d/%m/%Y"),
+            "edad": edad,
+            "email": email,
+            "escuela_id": bson.ObjectId(escuela_id),
+            "carrera": carrera,
+            "universidad": {
+                "id_universidad": universidad["_id"],
+                "siglas": siglas_universidad
+            }
+        },
+        "seguridad": {
+            "password_hash": "$2b$12$placeholder",
+            "estado_cuenta": "pendiente",
+            "rol": "alumno"
+        },
+        "economia": {
+            "creditos_disponibles": 0.0,
+            "total_ganado_historico": 0.0
+        },
+        "reputacion": {
+            "puntos": 0,
+            "insignias": [],
+            "cantidad_aportes": 0
+        }
+    }
+
+    resultado = db.alumnos.insert_one(alumno)
+    print(f"Alumno '{nombre_usuario}' registrado con legajo {legajo}")
+    return resultado.inserted_id
