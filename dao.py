@@ -168,3 +168,52 @@ def registrar_descarga(titulo_apunte):
         print(f"Descarga registrada para: '{titulo_apunte}'")
     return resultado.modified_count
 
+
+def existe_alumno(nombre_usuario):
+    return db.alumnos.find_one({ "perfil.nombre_usuario": nombre_usuario }) is not None
+
+def buscar_alumnos_por_nombre(texto):
+    import re
+    regex = re.compile(texto, re.IGNORECASE)
+    resultados = list(db.alumnos.find({
+        "$or": [
+            { "perfil.nombre": regex },
+            { "perfil.apellido": regex },
+            { "perfil.nombre_usuario": regex }
+        ]
+    }))
+
+    if not resultados:
+        print(f"No se encontraron alumnos con '{texto}'")
+        return []
+
+    print(f"\n{len(resultados)} alumno(s) encontrado(s):")
+    for a in resultados:
+        print(f"  - {a['perfil'].get('nombre', '')} {a['perfil'].get('apellido', '')} | Legajo: {a['perfil'].get('legajo', 'N/A')}")
+    return resultados
+
+def buscar_alumno_por_legajo(legajo):
+    alumno = db.alumnos.find_one({ "perfil.legajo": legajo })
+    if not alumno:
+        print(f"No se encontró ningún alumno con legajo {legajo}")
+        return None
+
+    p = alumno["perfil"]
+    s = alumno["seguridad"]
+    e = alumno.get("economia", {})
+    r = alumno.get("reputacion", {})
+
+    print(f"\n{'=' * 40}")
+    print(f"  Nombre:    {p.get('nombre', '')} {p.get('apellido', '')}")
+    print(f"  Usuario:   {p.get('nombre_usuario', '')}")
+    print(f"  Legajo:    {p.get('legajo', '')}")
+    print(f"  Email:     {p.get('email', '')}")
+    print(f"  Carrera:   {p.get('carrera', '')}")
+    print(f"  Rol:       {s.get('rol', '')}")
+    print(f"  Estado:    {s.get('estado_cuenta', '')}")
+    print(f"  Créditos:  {e.get('creditos_disponibles', 0)}")
+    print(f"  Puntos:    {r.get('puntos', 0)}")
+    print(f"  Aportes:   {r.get('cantidad_aportes', 0)}")
+    print(f"  Insignias: {r.get('insignias', [])}")
+    print(f"{'=' * 40}")
+    return alumno
