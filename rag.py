@@ -37,15 +37,17 @@ def extraer_texto_codigo(path):
 
 # ─── INDEXAR APUNTE ────────────────────────────────────────
 
-def indexar_apunte(apunte_id, titulo, descripcion, archivo_path=None):
+def indexar_apunte(apunte_id, titulo, descripcion, archivos_paths=None):
     texto = f"{titulo}. {descripcion}"
 
-    if archivo_path and os.path.exists(archivo_path):
-        extension = archivo_path.split(".")[-1].lower()
-        if extension == "pdf":
-            texto += " " + extraer_texto_pdf(archivo_path)
-        elif extension in ["c", "py", "java", "txt", "md", "h"]:
-            texto += " " + extraer_texto_codigo(archivo_path)
+    if archivos_paths:
+        for path in archivos_paths:
+            if os.path.exists(path):
+                extension = path.split(".")[-1].lower()
+                if extension == "pdf":
+                    texto += " " + extraer_texto_pdf(path)
+                elif extension in ["c", "py", "java", "txt", "md", "h", "cpp"]:
+                    texto += " " + extraer_texto_codigo(path)
 
     vector = modelo.encode(texto).tolist()
 
@@ -55,7 +57,6 @@ def indexar_apunte(apunte_id, titulo, descripcion, archivo_path=None):
         metadatas=[{"titulo": titulo, "apunte_id": str(apunte_id)}]
     )
     print(f"Apunte '{titulo}' indexado en ChromaDB")
-
 # ─── BUSQUEDA SEMÁNTICA ────────────────────────────────────
 
 def buscar_semantico(consulta, n_resultados=3):
@@ -98,3 +99,29 @@ def indexar_todos():
         )
     print("Indexación completada.")
 
+
+def buscar_semantico_con_apuntes(consulta, n_resultados=3):
+    import bson
+    vector_consulta = modelo.encode(consulta).tolist()
+    resultados = coleccion.query(
+        query_embeddings=[vector_consulta],
+        n_results=n_resultados
+    )
+    ids_encontrados = resultados["ids"][0]
+    distancias = resultados["distances"][0]
+
+    apuntes_encontrados = []
+    for i, apunte_id in enumerate(ids_encontrados):
+        apunte = db.apuntes.find_one({"_id": bson.ObjectId(apunte_id)})
+        if apunte:
+            relevancia = round((1 - distancias[i]) * 100, 2)
+            apuntes_encontrados.append({"apunte": apunte, "relevancia": relevancia})
+
+    return apuntes_encontrados
+
+def eliminar_apunte_vectorial(apunte_id):
+    try:
+        coleccion.delete(ids=[str(apunte_id)])
+        print(f"Apunte vectorial {apunte_id} eliminado de ChromaDB.")
+    except Exception as e:
+        print(f"Error al eliminar de ChromaDB: {e}")

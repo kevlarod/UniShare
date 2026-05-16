@@ -22,6 +22,18 @@ minio_client = Minio(
     secure=MINIO_SECURE
 )
 
+def inicializar_minio():
+    try:
+        if not minio_client.bucket_exists(MINIO_BUCKET):
+            minio_client.make_bucket(MINIO_BUCKET)
+            print(f"[Sistema] Bucket '{MINIO_BUCKET}' creado exitosamente en MinIO.")
+        else:
+            print(f"[Sistema] El bucket '{MINIO_BUCKET}' ya está listo.")
+    except S3Error as e:
+        print(f"[Error crítico] No se pudo inicializar MinIO: {e}")
+
+inicializar_minio()
+
 # ─── ALUMNOS ───────────────────────────────────────────────
 
 def registrar_alumno(nombre_usuario, email, carrera, siglas_universidad="UNDEC"):
@@ -68,31 +80,45 @@ def buscar_alumno(nombre_usuario):
 
 # ─── APUNTES ───────────────────────────────────────────────
 
-def subir_apunte(nombre_usuario, titulo, descripcion, materia, año_cursada, tags, tipo_apunte, archivo_path):
+def subir_apunte(nombre_usuario, titulo, descripcion, materia, año_cursada, tags, tipo_apunte, archivos_paths):
     alumno = db.alumnos.find_one({ "perfil.nombre_usuario": nombre_usuario })
     if not alumno:
         return {"error": f"Alumno '{nombre_usuario}' no encontrado"}
 
-    nombre_archivo = os.path.basename(archivo_path)
-    extension = nombre_archivo.split(".")[-1]
+    recursos = []
+    
+    for path in archivos_paths:
+        nombre_archivo = os.path.basename(path)
+        extension = nombre_archivo.split(".")[-1].lower()
 
-    if tipo_apunte == "documento":
-        carpeta = "apuntes"
-        tipo_archivo = "pdf" if extension == "pdf" else "imagen"
-    elif tipo_apunte == "codigo_fuente":
-        carpeta = "proyectos"
-        tipo_archivo = "codigo"
-    else:
-        carpeta = "apuntes"
-        tipo_archivo = "pdf"
+        if tipo_apunte == "documento":
+            carpeta = "apuntes"
+            tipo_archivo = "pdf" if extension == "pdf" else "imagen"
+        elif tipo_apunte == "codigo_fuente":
+            carpeta = "proyectos"
+            tipo_archivo = "codigo"
+        else:
+            carpeta = "apuntes"
+            tipo_archivo = "pdf"
 
-    objeto_path = f"{carpeta}/{nombre_archivo}"
+        objeto_path = f"{carpeta}/{nombre_archivo}"
 
-    try:
-        minio_client.fput_object(MINIO_BUCKET, objeto_path, archivo_path)
-        print(f"Archivo '{nombre_archivo}' subido a MinIO en: {objeto_path}")
-    except S3Error as e:
-        return {"error": f"Error al subir a MinIO: {e}"}
+        try:
+            minio_client.fput_object(MINIO_BUCKET, objeto_path, path)
+            print(f"Archivo '{nombre_archivo}' subido a MinIO en: {objeto_path}")
+        except S3Error as e:
+            return {"error": f"Error al subir a MinIO: {e}"}
+
+        # Se marca como descriptor de forma opcional si es un formato de documentación típico
+        es_doc = extension in ["pdf", "docx", "doc", "txt", "md"]
+
+        recursos.append({
+            "nombre": nombre_archivo,
+            "formato": extension,
+            "url_storage": f"unishare/{objeto_path}",
+            "es_descriptor": es_doc, 
+            "tipo_archivo": tipo_archivo
+        })
 
     apunte = {
         "autor_id": alumno["_id"],
@@ -104,13 +130,7 @@ def subir_apunte(nombre_usuario, titulo, descripcion, materia, año_cursada, tag
             "año_cursada": año_cursada,
             "tags": tags
         },
-        "recursos": [{
-            "nombre": nombre_archivo,
-            "formato": extension,
-            "url_storage": f"unishare/{objeto_path}",
-            "es_descriptor": True,
-            "tipo_archivo": tipo_archivo
-        }],
+        "recursos": recursos,
         "estadisticas": {
             "descargas": 0,
             "votos_positivos": 0,
@@ -281,3 +301,24 @@ def registrar_alumno_completo(nombre, apellido, dni, fecha_nacimiento, edad, ema
     resultado = db.alumnos.insert_one(alumno)
     print(f"Alumno '{nombre_usuario}' registrado con legajo {legajo}")
     return resultado.inserted_id
+
+def eliminar_apunte(titulo_apunte):
+    apunte = db.apuntes.find_one({ "titulo": titulo_apunte })
+    if not apunte:
+        print(f"Apunte '{titulo_apunte}' no encontrado")
+        return None
+
+    for recurso in apunte.get("recursos", []):
+        url_storage = recurso.get("url_storage", "")
+        if url_storage.startswith("unishare/"):
+            objeto_path = url_storage.replace("unishare/", "")
+            try:
+                minio_client.remove_object(MINIO_BUCKET, objeto_path)
+                print(f"Archivo '{objeto_path}' eliminado de MinIO.")
+            except Exception as e:
+                print(f"Error al eliminar '{objeto_path}' de MinIO: {e}")
+
+    # Eliminar documento de MongoDB
+    db.apuntes.delete_one({ "_id": apunte["_id"] })
+    print(f"Apunte '{titulo_apunte}' eliminado de MongoDB.")
+    return apunte["_id"]
